@@ -1,0 +1,87 @@
+create database final
+use final
+
+--1
+create table Employee(
+EmpID int primary key,
+EmpName varchar(100),
+Dept varchar(100),
+Salary int,
+JoinDate date
+);
+
+create table Project(
+ProjectID int,
+ProjectName varchar(100),
+EmpID int,
+Budget int,
+foreign key(EmpID) references Employee(EmpID)
+);
+
+insert into Employee values
+(101,'Rahim Hasan','IT',65000,'2021-02-10'),
+(102,'Nusrat Jahan','HR',48000,'2020-07-15'),
+(103,'Sohan Karim','Finance',82000,'2019-11-20'),
+(104,'Tania Noor','IT',72000,'2022-01-05'),
+(105,'Fahim Ahmed','Marketing',45000,'2023-03-18');
+
+insert into Project values
+(201,'ERP System',101,500000),
+(202,'HR Automation',102,200000),
+(203,'AI Analytics',103,750000),
+(204,'Sales Dashboard',104,150000),
+(205,'Finance Portal',105,600000);
+
+select * from Employee
+select * from Project
+
+--2
+create proc report
+as
+begin
+select EmpName,Dept,ProjectName,Budget from Employee inner join Project on Employee.EmpID=Project.EmpID
+end
+
+exec report
+
+--3
+create function EmpEx()
+returns table
+as
+return(select EmpName,Dept,DATEDIFF(year,JoinDate,SYSDATETIME()) as Experience from Employee)
+
+select * from dbo.EmpEx()
+
+--4
+
+update Employee
+set Salary= case
+when Salary<(select avg(Salary) from Employee) then Salary*1.1
+else Salary*1.05
+end
+
+select * from Employee
+
+--5
+create view view_empinfo
+as select EmpName,Dept, ProjectName from Employee inner join Project on Employee.EmpID=Project.EmpID
+
+select * from view_empinfo
+
+alter view view_empinfo
+as select EmpName,Dept, ProjectName from Employee Employee inner join Project on Employee.EmpID=Project.EmpID where Dept='IT'
+
+select * from view_empinfo
+
+--6
+create view report_2
+with schemabinding
+as select Dept,sum(isnull(Budget,0)) as Total_Budget,COUNT_BIG(*) as C from dbo.Employee inner join dbo.Project 
+on Employee.EmpID=Project.EmpID group by Dept
+
+select * from report_2
+
+create unique clustered index idx_report_2
+on report_2(Dept)
+
+select * from report_2s
